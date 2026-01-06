@@ -14,7 +14,6 @@ export const executeCode = (code: string, testCases: TestCase[]): TestResult[] =
   }
 
   // 1. Extract function name to call
-  // Regex looks for "function name(" or "const name =" or "let name ="
   const functionMatch = code.match(/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
   const constMatch = code.match(/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:function|\(.*\)\s*=>)/);
   
@@ -30,7 +29,6 @@ export const executeCode = (code: string, testCases: TestCase[]): TestResult[] =
 
   try {
     // 2. Create the function within a new scope
-    // We append a return statement to get the function object out of the string
     const wrappedCode = `
       ${code}
       return ${funcName};
@@ -46,26 +44,23 @@ export const executeCode = (code: string, testCases: TestCase[]): TestResult[] =
     // 3. Run each test case
     return testCases.map(tc => {
       try {
-        // Parse input: assume input is a JSON string representing the arguments array
-        // e.g. "[[2,7], 9]" -> args = [[2,7], 9]
         let args;
         try {
             args = JSON.parse(tc.input);
-            if (!Array.isArray(args)) {
-                // If user didn't provide array wrapper, wrap it? 
-                // Strict mode: assume inputs are array of args
-                // Fallback: if it's not array, wrap it
-                args = [args];
-            }
         } catch (e) {
-            // Fallback for simple inputs that aren't valid JSON (like raw strings without quotes)
-            // This is risky, but user might type: 5 instead of [5]
-            // We'll treat it as string if parsing fails, but really we want JSON.
              return {
                 passed: false,
                 input: tc.input,
                 error: "Input must be valid JSON array of arguments (e.g. [[1,2], 3])"
              };
+        }
+
+        // Heuristic: Handle common user mistake of not wrapping single array argument in outer array
+        if (Array.isArray(args) && userFn.length === 1 && args.length !== 1) {
+             args = [args];
+        } else if (!Array.isArray(args)) {
+            // If user provided a primitive (e.g. 5), wrap it in args array -> [5]
+            args = [args];
         }
 
         let expected;
@@ -83,7 +78,6 @@ export const executeCode = (code: string, testCases: TestCase[]): TestResult[] =
         const result = userFn(...args);
         
         // Compare
-        // We use JSON.stringify for deep comparison of arrays/objects
         const resultStr = JSON.stringify(result);
         const expectedStr = JSON.stringify(expected);
         const passed = resultStr === expectedStr;

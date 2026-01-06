@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Question, Solution, TestCase, TestResult } from '../types';
 import { 
@@ -222,6 +223,16 @@ const QuestionModal: React.FC<ModalProps> = ({
           actionLabel: 'Delete',
           variant: 'danger',
           payload: index
+      });
+  };
+
+  const requestDelete = () => {
+      setConfirmation({
+          type: 'delete',
+          title: 'Delete Question',
+          message: 'Are you sure you want to permanently delete this question?',
+          actionLabel: 'Delete',
+          variant: 'danger'
       });
   };
 
@@ -633,7 +644,7 @@ const QuestionModal: React.FC<ModalProps> = ({
                 <HintsSection />
 
                 {/* Notes */}
-                 <div className="space-y-4 pt-4 border-t border-white/5">
+                 <div className="space-y-4 pt-4 border-t border-white/10">
                      <div className="space-y-1">
                         <label className="text-[10px] font-bold text-slate-500 uppercase">Notes</label>
                         <textarea value={data.notes} onChange={e => setData({...data, notes: e.target.value})} className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-slate-300 focus:outline-none resize-none" placeholder="Notes..." />
@@ -893,6 +904,16 @@ const QuestionModal: React.FC<ModalProps> = ({
                   </div>
               )}
               
+              {/* Delete Button (Mobile) */}
+              <div className="mt-8 mb-4 px-4">
+                 <button 
+                    onClick={requestDelete}
+                    className="w-full py-3 rounded-xl border border-red-500/20 text-red-400 bg-red-500/5 hover:bg-red-500/10 flex items-center justify-center gap-2 text-sm font-bold transition-colors"
+                 >
+                    <Trash2 size={16} /> Delete Question
+                 </button>
+              </div>
+
               {/* Bottom Spacer */}
               <div className="h-16"></div>
           </div>
@@ -981,6 +1002,10 @@ const QuestionModal: React.FC<ModalProps> = ({
               {!isMobile && (
                   <div className={`h-16 ${footerStyle} border-t px-6 flex items-center justify-between shrink-0 bg-slate-900`}>
                         <div className="flex items-center gap-3">
+                            <button onClick={requestDelete} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors" title="Delete Question">
+                                <Trash2 size={16} />
+                            </button>
+                            <div className="h-6 w-px bg-white/10 mx-1"></div>
                             <button onClick={requestReset} className="px-4 py-2 rounded-lg font-bold text-xs bg-white/5 text-slate-400 hover:text-white transition-colors flex items-center gap-2 border border-white/5" title="Reset all progress for this question"><RotateCcw size={14} /> Reset</button>
                             <div className="h-6 w-px bg-white/10 mx-1"></div>
                             {data.title && (
