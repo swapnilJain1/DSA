@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Chat, Type, GenerateContentResponse } from "@google/genai";
 
 const getAIClient = (apiKey: string) => {
@@ -135,7 +136,8 @@ export const generateEdgeCases = async (title: string, description: string, apiK
     const response = await withTimeout(ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Based on this problem "${title}", list 3 critical edge cases (e.g., empty input, max value).
-      Format: Return ONLY a bulleted list in Markdown. Be extremely concise.
+      Format: Return ONLY a bulleted list in Markdown with very brief handling instructions.
+      Example: "- Empty Array: Return 0."
       Description: ${description}`,
     })) as GenerateContentResponse;
     return response.text || "";
@@ -201,13 +203,14 @@ export const generatePracticeQuestions = async (
             Context: Difficulty ${difficulty}, Topics: ${topicStr}.
             
             CRITICAL OUTPUT REQUIREMENTS:
-            1. "description": Must be a VERBOSE Markdown string (minimum 100 words). 
-               - Start with "### Problem Statement".
-               - Use "**" only for key terms, do NOT bold the entire text.
-               - MUST Include a "### Example" section with Input/Output code blocks.
-               - MUST Include "### Constraints" as a bulleted list.
-            2. "url": Provide the actual LeetCode or GeeksForGeeks URL. If not found, leave it as an empty string.
-            3. "title": The standard name of the problem.
+            1. "description": A structured Markdown string. 
+               - MUST USE ACTUAL NEWLINE CHARACTERS ('\\n') for formatting. Do not return a single line string.
+               - MUST BE CONCISE. Avoid conversational filler.
+               - Section "### Problem": Max 3 sentences defining the task.
+               - Section "### Examples": exactly 2 distinct examples (Input/Output).
+               - Section "### Constraints": A brief bulleted list.
+            2. "url": Provide the actual LeetCode or GeeksForGeeks URL. If not found, leave as empty string.
+            3. "title": Standard problem name.
             4. "testCases": Array of 2 basic test cases (input/expected strings).
             
             Return valid JSON array.`,

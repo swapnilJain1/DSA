@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -109,6 +110,33 @@ describe('AIQuestionGeneratorModal', () => {
             expect.objectContaining({ 
                 title: 'Two Sum',
                 url: expect.stringContaining('google.com/search?q=Two%20Sum%20leetcode')
+            })
+        ]));
+    });
+
+    it('formats description with newlines during import if missing', async () => {
+        // Simulate bad AI response missing newlines
+        const badDescription = "Some intro### Problem: The problem text.* Constraint 1";
+        
+        (geminiService.generatePracticeQuestions as unknown as jest.Mock<(...args: any[]) => Promise<any>>).mockResolvedValue([
+            { title: 'Bad Format Q', description: badDescription, difficulty: 'Easy', topics: [], url: '' }
+        ]);
+
+        render(<AIQuestionGeneratorModal {...mockProps} />);
+        fireEvent.click(screen.getByText('Find Questions'));
+        await waitFor(() => screen.getByText('Bad Format Q'));
+        fireEvent.click(screen.getByText('Import 1 Questions'));
+
+        expect(mockProps.onImport).toHaveBeenCalledWith(expect.arrayContaining([
+            expect.objectContaining({ 
+                title: 'Bad Format Q',
+                // Expect inserted newlines
+                description: expect.stringContaining('\n\n###') 
+            })
+        ]));
+        expect(mockProps.onImport).toHaveBeenCalledWith(expect.arrayContaining([
+            expect.objectContaining({ 
+                description: expect.stringContaining('\n* ') 
             })
         ]));
     });

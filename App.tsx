@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
   Layout, ListTodo, BarChart2, Search, Plus, 
@@ -584,6 +585,7 @@ const App = () => {
         
         {activeQuestion && (
             <QuestionModal 
+                key={activeQuestion.id}
                 question={activeQuestion} 
                 isOpen={!!activeQuestion} 
                 onClose={handleCloseQuestionModal} 

@@ -1,3 +1,4 @@
+
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { generatePracticeQuestions, generateTestCases } from './geminiService';
 
@@ -21,7 +22,7 @@ describe('geminiService', () => {
         mockGenerateContent.mockClear();
     });
 
-    it('generatePracticeQuestions requests testCases in prompt', async () => {
+    it('generatePracticeQuestions requests testCases and formatting in prompt', async () => {
         // Mock successful JSON response
         (mockGenerateContent as unknown as jest.Mock<(...args: any[]) => Promise<any>>).mockResolvedValue({
             text: JSON.stringify([{ title: 'Test Q', description: 'Desc', difficulty: 'Easy', topics: [], url: '', testCases: [] }])
@@ -30,8 +31,14 @@ describe('geminiService', () => {
         await generatePracticeQuestions(5, 'Hard', ['Arrays'], 'Custom', 'fake-key');
 
         const callArgs = (mockGenerateContent as unknown as jest.Mock).mock.calls[0][0] as any;
+        
+        // Check testCases requirement
         expect(callArgs.contents).toContain('testCases');
         expect(callArgs.config.responseSchema.items.properties).toHaveProperty('testCases');
+
+        // Check formatting requirement
+        expect(callArgs.contents).toContain("MUST USE ACTUAL NEWLINE CHARACTERS");
+        expect(callArgs.contents).toContain("MUST BE CONCISE");
     });
 
     it('generateTestCases returns parsed array', async () => {
